@@ -1,14 +1,18 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import Container from "./components/Layout/Container";
 import Home from "./components/Home";
+import { theme } from "./theme/muiTheme";
+import { ThemeProvider } from "@material-ui/core";
+import Layout from "./components/Layout/Layout";
 
 function App() {
 	return (
-		<Container>
-			<Home></Home>
-		</Container>
+		<ThemeProvider theme={theme}>
+			<Layout>
+				<Home></Home>
+			</Layout>
+		</ThemeProvider>
 	);
 }
 
