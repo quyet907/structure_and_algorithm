@@ -15,7 +15,15 @@ const style: React.CSSProperties = {
 export default function Layout({ ...props }) {
 	return (
 		<div style={{ width: "100%", height: "100%" }}>
-			<div style={{ width: "100%", boxShadow: "1px 1px 10px 1px #0000003b", position: "sticky", top: 0, background: "#fff" }}>
+			<div
+				style={{
+					width: "100%",
+					boxShadow: "1px 1px 10px 1px #0000003b",
+					position: "sticky",
+					top: 0,
+					background: "#fff",
+				}}
+			>
 				<ul
 					style={{
 						display: "flex",
@@ -53,7 +61,7 @@ export default function Layout({ ...props }) {
 					</li>
 				</ul>
 			</div>
-			<Container style={{marginTop: theme.spacing(8)}}>{props.children}</Container>
+			<Container style={{ marginTop: theme.spacing(8) }}>{props.children}</Container>
 		</div>
 	);
 }
