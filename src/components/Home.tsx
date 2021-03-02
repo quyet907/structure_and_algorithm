@@ -18,6 +18,7 @@ export default function Home() {
 
 			<Grid item xs>
 				<ProductTable2 />
+				<Box m={20}></Box>
 			</Grid>
 		</Grid>
 	);

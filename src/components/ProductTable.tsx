@@ -81,7 +81,7 @@ export default function ProductTable() {
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(ROWSPERPAGEOPTIONS[0]);
 
-	const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof Product) => {
+	const handleRequestSort = (property: keyof Product) => {
 		const isAsc = orderBy === property && order === "asc";
 		setOrder(isAsc ? "desc" : "asc");
 		setOrderBy(property);

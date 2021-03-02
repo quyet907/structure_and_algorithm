@@ -17,7 +17,7 @@ import {
 } from "@material-ui/core";
 import { Delete, FilterListRounded, Search } from "@material-ui/icons";
 import clsx from "clsx";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SearchingAlgorithm, SortingAlgorithm } from "../ProductTable2";
 
 const useToolbarStyles = makeStyles((theme: Theme) =>
@@ -59,6 +59,13 @@ export const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 	const [algorithm, setAlgorithm] = useState<SearchingAlgorithm>("linear");
 	const [sortAlgorithm, setSortAlgorithm] = useState<SortingAlgorithm>("selection");
 
+	useEffect(() => {
+		if (field !== "productCode" && algorithm === "binary") {
+			setAlgorithm("linear");
+			props.onChangeAlgorithm && props.onChangeAlgorithm("linear");
+		}
+	}, [field]);
+
 	return (
 		<Toolbar
 			className={clsx(classes.root, {
@@ -91,7 +98,7 @@ export const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 					</Box>
 
 					<Box ml={2}>
-						<FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+						<FormControl variant="outlined" size="small" style={{ minWidth: 140 }}>
 							<InputLabel id="demo-simple-select-outlined-label">Field</InputLabel>
 							<Select
 								labelId="demo-simple-select-outlined-label"
@@ -105,6 +112,7 @@ export const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 								label="Field"
 								placeholder="Order by"
 							>
+								<MenuItem value="productCode">Product Code</MenuItem>
 								<MenuItem value="name">Name</MenuItem>
 								<MenuItem value="brand">Brand</MenuItem>
 							</Select>
@@ -113,7 +121,9 @@ export const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 
 					<Box ml={2}>
 						<FormControl variant="outlined" size="small" style={{ minWidth: 160 }}>
-							<InputLabel id="demo-simple-select-outlined-label">Searching algorithms</InputLabel>
+							<InputLabel id="demo-simple-select-outlined-label">
+								Searching algorithms
+							</InputLabel>
 							<Select
 								labelId="demo-simple-select-outlined-label"
 								id="demo-simple-select-outlined"
@@ -127,14 +137,18 @@ export const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
 								placeholder="Searching algorithms"
 							>
 								<MenuItem value="linear">Linear</MenuItem>
-								<MenuItem value="binary">Binary</MenuItem>
+								<MenuItem disabled={field !== "productCode"} value="binary">
+									Binary
+								</MenuItem>
 							</Select>
 						</FormControl>
 					</Box>
 
 					<Box ml={2}>
 						<FormControl variant="outlined" size="small" style={{ minWidth: 130 }}>
-							<InputLabel id="demo-simple-select-outlined-label">Sorting algorithm</InputLabel>
+							<InputLabel id="demo-simple-select-outlined-label">
+								Sorting algorithm
+							</InputLabel>
 							<Select
 								labelId="demo-simple-select-outlined-label"
 								id="demo-simple-select-outlined"

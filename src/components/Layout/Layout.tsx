@@ -21,6 +21,7 @@ export default function Layout({ ...props }) {
 					boxShadow: "1px 1px 10px 1px #0000003b",
 					position: "sticky",
 					top: 0,
+					zIndex: 5,
 					background: "#fff",
 				}}
 			>

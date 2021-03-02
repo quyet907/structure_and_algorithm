@@ -1,4 +1,4 @@
-import { Box, Typography } from "@material-ui/core";
+import { Box, IconButton, Typography } from "@material-ui/core";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -6,9 +6,11 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
+import { Delete, HighlightOff } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
 import { Paging } from "../model/Paging";
-import { data, Product } from "../model/Product";
+import { data, detele, Product } from "../model/Product";
+import ConfirmPopUp from "./common/ConfirmPopUp";
 import EnhancedTableHead, { Order } from "./table/TableHead";
 import { EnhancedTableToolbar } from "./table/Toolbar";
 
@@ -87,11 +89,13 @@ interface Query<T> {
 
 export default function ProductTable2() {
 	const classes = useStyles();
+	const [confirmPopUp, setConfirmPopUp] = useState<boolean>(false);
+	const [selectedItem, setSelectedItem] = useState<string>("");
 	const [query, setQuery] = React.useState<Query<Product>>({
 		page: 0,
 		pageSize: ROWSPERPAGEOPTIONS[0],
 		order: "asc",
-		orderBy: "name",
+		orderBy: "productCode",
 		searchingAlgorithm: "linear",
 		sortingAlgorithm: "selection",
 		searchField: "name",
@@ -106,7 +110,7 @@ export default function ProductTable2() {
 
 	const [selected, setSelected] = React.useState<string[]>([]);
 
-	const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof Product) => {
+	const handleRequestSort = (property: keyof Product) => {
 		const isAsc = query.orderBy === property && query.order === "asc";
 		setQuery({ ...query, order: isAsc ? "desc" : "asc", orderBy: property });
 	};
@@ -145,12 +149,6 @@ export default function ProductTable2() {
 		return paging;
 	};
 
-	const swap = (item1: Product, item2: Product) => {
-		const temp = item1;
-		item1 = item2;
-		item2 = temp;
-	};
-
 	const swap2 = (array: Product[], index1: number, index2: number) => {
 		let temp = array[index1];
 		array[index1] = array[index2];
@@ -158,21 +156,7 @@ export default function ProductTable2() {
 	};
 
 	const selectionSort = (array: Product[], order: Order, field: keyof Product): Product[] => {
-		// for (let i = 0; i < arr.length; i++) {
-		// 	for (let j = i + 1; j < arr.length; j++) {
-		// 		if (order === "asc") {
-		// 			if (arr[i][field] > arr[j][field]) {
-		// 				swap(arr[i], arr[j]);
-		// 			}
-		// 		} else {
-		// 			if (arr[i][field] < arr[j][field]) {
-		// 				swap(arr[i], arr[j]);
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// console.log(arr);
-
+		console.time();
 		for (let x = 0; x < array.length; x++) {
 			for (let y = x + 1; y < array.length; y++) {
 				if (order === "asc") {
@@ -192,33 +176,13 @@ export default function ProductTable2() {
 				}
 			}
 		}
+		console.timeEnd();
 
 		return array;
-
-		// let len = arr.length;
-		// for (let i = 0; i < len; i++) {
-		// 	let min = i;
-		// 	for (let j = i + 1; j < len; j++) {
-		// 		if (order === "asc") {
-		// 			if (arr[min][field] > arr[j][field]) {
-		// 				min = j;
-		// 			}
-		// 		} else {
-		// 			if (arr[min][field] < arr[j][field]) {
-		// 				min = j;
-		// 			}
-		// 		}
-		// 	}
-		// 	if (min !== i) {
-		// 		let tmp = arr[i];
-		// 		arr[i] = arr[min];
-		// 		arr[min] = tmp;
-		// 	}
-		// }
-		// return arr;
 	};
 
 	const bubbleSort = (arr: Product[], order: Order, field: keyof Product): Product[] => {
+		console.time();
 		for (let i = 0; i < arr.length - 1; i++) {
 			for (let j = 0; j < arr.length - 1 - i; j++) {
 				if (order === "asc") {
@@ -236,6 +200,7 @@ export default function ProductTable2() {
 				}
 			}
 		}
+		console.timeEnd();
 
 		return arr;
 	};
@@ -260,20 +225,25 @@ export default function ProductTable2() {
 		searchText: string,
 		field: keyof Product
 	): Product[] => {
-		let results: Product[] = [];
+		console.log("searchText: ", searchText);
+		console.log("field: ", field);
 
-		return results;
-	};
+		let left = 0;
+		let right = sortedArr.length - 1;
+		while (left <= right) {
+			let mid = Math.floor((left + right) / 2);
 
-	const convertDataToPaging = (data: Product[], query: Query<Product>): Paging<Product> => {
-		const paging: Paging<Product> = {
-			page: query.page,
-			pageSize: query.pageSize,
-			rows: data.slice((query.page - 1) * query.pageSize, query.page * query.pageSize),
-			total: data.length,
-			totalPages: Math.ceil(data.length / query.pageSize),
-		};
-		return paging;
+			if (sortedArr[mid][field] === searchText) {
+				return [sortedArr[mid]];
+			}
+
+			if (searchText > sortedArr[mid][field]) {
+				left = mid + 1;
+			} else {
+				right = mid - 1;
+			}
+		}
+		return [];
 	};
 
 	const getPagingWithQuery = (data: Product[], query: Query<Product>): Paging<Product> => {
@@ -296,6 +266,8 @@ export default function ProductTable2() {
 					break;
 
 				default:
+					console.log("bubble");
+
 					results = bubbleSort(data, query.order, query.orderBy);
 					break;
 			}
@@ -305,12 +277,7 @@ export default function ProductTable2() {
 
 	// const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 	useEffect(() => {
-		// console.log(query);
-		// const filtered = stableSort(data, getComparator(query.order, query.orderBy));
-		// const paging = getPaging(filtered, query);
-		// setPagingItem(paging);
 		console.log(query);
-
 		const pagingFiltered = getPagingWithQuery(data, query);
 		setPagingItem(pagingFiltered);
 	}, [query]);
@@ -361,6 +328,13 @@ export default function ProductTable2() {
 										tabIndex={-1}
 										key={item.name}
 									>
+										<TableCell>
+											#{" "}
+											{getHightLightText(
+												item.productCode,
+												query.searchText || ""
+											)}
+										</TableCell>
 										<TableCell
 											component="th"
 											id={labelId}
@@ -374,7 +348,17 @@ export default function ProductTable2() {
 											{convertMonney(item.price)}
 										</TableCell>
 										<TableCell align="right">{item.quantity}</TableCell>
-										<TableCell align="right">{item.discount}</TableCell>
+										<TableCell align="right">
+											<IconButton
+												style={{ padding: 12 }}
+												onClick={() => {
+													setConfirmPopUp(true);
+													setSelectedItem(item.productCode);
+												}}
+											>
+												<HighlightOff color="error" />
+											</IconButton>
+										</TableCell>
 										{/* <TableCell align="right">{row.createdAt}</TableCell> */}
 									</TableRow>
 								);
@@ -397,6 +381,17 @@ export default function ProductTable2() {
 					onChangeRowsPerPage={handleChangeRowsPerPage}
 				/>
 			</Box>
+			<ConfirmPopUp
+				open={confirmPopUp}
+				onClose={() => setConfirmPopUp(false)}
+				onConfirm={() => {
+					detele(selectedItem);
+					const pagingFiltered = getPagingWithQuery(data, query);
+					setPagingItem(pagingFiltered);
+					setConfirmPopUp(false);
+					console.log(data);
+				}}
+			></ConfirmPopUp>
 		</div>
 	);
 }
@@ -409,13 +404,15 @@ const convertMonney = (price: number): string => {
 	return stringPrice;
 };
 
-const getHightLightText = (value: string, searchText: string): React.ReactNode => {
+const getHightLightText = (value: string | number, searchText: string): React.ReactNode => {
 	if (searchText) {
 		const regEx = new RegExp(searchText, "i");
-		const newValue = value.replace(regEx, '<span style="background-color:yellow;">$&</span>');
+		const newValue = value
+			.toString()
+			.replace(regEx, '<span style="background-color:yellow;">$&</span>');
 		return (
 			<Typography
-				component="span"
+				display="inline"
 				dangerouslySetInnerHTML={{ __html: newValue }}
 			></Typography>
 		);

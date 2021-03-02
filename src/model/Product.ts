@@ -1,4 +1,9 @@
+const getZeroNumber = (num: number): string => {
+	if (num < 10) return `00${num}`;
+	return `0${num}`;
+};
 export interface Product {
+	productCode: string;
 	name: string;
 	price: number;
 	brand: string;
@@ -6,7 +11,7 @@ export interface Product {
 	discount: number;
 }
 
-export const data: Product[] = [
+export let data: Product[] = [
 	{
 		name: "iPhone 12 128GB",
 		brand: "Apple",
@@ -112,4 +117,15 @@ export const data: Product[] = [
 		quantity: 12,
 		discount: 5,
 	},
-];
+].map((item, index) => {
+	let newProduct: Product = { ...item, productCode: getZeroNumber(index + 1) };
+	return newProduct;
+});
+
+export const detele = (productId: string) => {
+	let newData = [];
+	for (let index = 0; index < data.length; index++) {
+		if (data[index]["productCode"] !== productId) newData.push(data[index]);
+	}
+	data = newData;
+};
