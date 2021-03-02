@@ -31,9 +31,9 @@ function App() {
 	return (
 		<ThemeProvider theme={theme}>
 			<Layout>
-				{bubbleSort(arr).join(" , ")}
+				{/* {bubbleSort(arr).join(" , ")} */}
 				{/* <Box>bubbleSort(arr)</Box> */}
-				{/* <Home></Home> */}
+				<Home></Home>
 				{/* <New></New> */}
 			</Layout>
 		</ThemeProvider>
