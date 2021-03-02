@@ -219,19 +219,24 @@ export default function ProductTable2() {
 	};
 
 	const bubbleSort = (arr: Product[], order: Order, field: keyof Product): Product[] => {
-		for (let i = 0; i < data.length; i++) {
-			for (let j = i + 1; j < arr.length; j++) {
+		for (let i = 0; i < arr.length - 1; i++) {
+			for (let j = 0; j < arr.length - 1 - i; j++) {
 				if (order === "asc") {
-					if (arr[i][field] > arr[j][field]) {
-						swap(arr[i], arr[j]);
+					if (arr[j][field] > arr[j + 1][field]) {
+						const temp = arr[j];
+						arr[j] = arr[j + 1];
+						arr[j + 1] = temp;
 					}
 				} else {
-					if (arr[i][field] < arr[j][field]) {
-						swap(arr[i], arr[j]);
+					if (arr[j][field] < arr[j + 1][field]) {
+						const temp = arr[j];
+						arr[j] = arr[j + 1];
+						arr[j + 1] = temp;
 					}
 				}
 			}
 		}
+
 		return arr;
 	};
 
