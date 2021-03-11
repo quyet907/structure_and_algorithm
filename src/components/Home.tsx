@@ -12,8 +12,9 @@ export default function Home() {
 			</Grid>
 
 			<Grid item xs>
-				<ProductTable2 />
-				<Box m={20}></Box>
+				<Box mb={20}>
+					<ProductTable2 />
+				</Box>
 			</Grid>
 		</Grid>
 	);

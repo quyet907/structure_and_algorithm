@@ -10,6 +10,7 @@ import {
 } from "@material-ui/core";
 import React from "react";
 import { Product } from "../../model/Product";
+import { Order } from "../../model/Query";
 
 const useStyles = makeStyles((theme: Theme) =>
 	createStyles({
@@ -51,8 +52,6 @@ const headCells: HeadCell[] = [
 	{ id: "quantity", numeric: true, label: "Quantity" },
 	{ id: "actions", numeric: false, label: "" },
 ];
-
-export type Order = "asc" | "desc";
 
 interface EnhancedTableProps {
 	classes: ReturnType<typeof useStyles>;

@@ -9,9 +9,11 @@ import TableRow from "@material-ui/core/TableRow";
 import { HighlightOff } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
 import { Paging } from "../model/Paging";
-import { data, detele, Product } from "../model/Product";
+import { data, deleteProduct, Product } from "../model/Product";
+import { Order, Query } from "../model/Query";
+import { convertMoney, getHightLightText } from "../utils/AppUtils";
 import ConfirmPopUp from "./common/ConfirmPopUp";
-import EnhancedTableHead, { Order } from "./table/TableHead";
+import EnhancedTableHead from "./table/TableHead";
 import { EnhancedTableToolbar } from "./table/Toolbar";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -41,20 +43,6 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const ROWSPERPAGEOPTIONS = [7, 15, 25];
-
-export type SearchingAlgorithm = "linear" | "binary";
-export type SortingAlgorithm = "selection" | "bubble";
-
-interface Query<T> {
-	page: number;
-	pageSize: number;
-	order: Order;
-	orderBy: keyof T;
-	searchText?: string;
-	searchField: keyof T;
-	searchingAlgorithm: SearchingAlgorithm;
-	sortingAlgorithm: SortingAlgorithm;
-}
 
 export default function ProductTable2() {
 	const classes = useStyles();
@@ -105,14 +93,20 @@ export default function ProductTable2() {
 		let paging: Paging<Product> = {
 			page: query.page,
 			pageSize: query.pageSize,
-			rows: products,
+			rows: [],
 			total: 1,
 			totalPages: 1,
 		};
-		paging.rows = products.slice(
-			query.page * query.pageSize,
-			query.page * query.pageSize + query.pageSize
-		);
+		const start = query.page * query.pageSize;
+		const end = query.page * query.pageSize + query.pageSize;
+
+		for (let index = start; index < end; index++) {
+			if (products[index]) {
+				paging.rows.push(products[index]);
+				continue;
+			}
+			break;
+		}
 		paging.total = products.length;
 		paging.totalPages = Math.ceil(paging.total / paging.pageSize);
 		return paging;
@@ -125,33 +119,24 @@ export default function ProductTable2() {
 	};
 
 	const selectionSort = (array: Product[], order: Order, field: keyof Product): Product[] => {
-		console.time();
 		for (let x = 0; x < array.length; x++) {
 			for (let y = x + 1; y < array.length; y++) {
 				if (order === "asc") {
 					if (array[x][field] > array[y][field]) {
 						swap2(array, x, y);
-						// let tempt = array[x];
-						// array[x] = array[y];
-						// array[y] = tempt;
 					}
 				} else {
 					if (array[x][field] < array[y][field]) {
 						swap2(array, x, y);
-						// let tempt = array[x];
-						// array[x] = array[y];
-						// array[y] = tempt;
 					}
 				}
 			}
 		}
-		console.timeEnd();
 
 		return array;
 	};
 
 	const bubbleSort = (arr: Product[], order: Order, field: keyof Product): Product[] => {
-		console.time();
 		for (let i = 0; i < arr.length - 1; i++) {
 			for (let j = 0; j < arr.length - 1 - i; j++) {
 				if (order === "asc") {
@@ -169,8 +154,6 @@ export default function ProductTable2() {
 				}
 			}
 		}
-		console.timeEnd();
-
 		return arr;
 	};
 
@@ -194,9 +177,6 @@ export default function ProductTable2() {
 		searchText: string,
 		field: keyof Product
 	): Product[] => {
-		console.log("searchText: ", searchText);
-		console.log("field: ", field);
-
 		let left = 0;
 		let right = sortedArr.length - 1;
 		while (left <= right) {
@@ -235,8 +215,6 @@ export default function ProductTable2() {
 					break;
 
 				default:
-					console.log("bubble");
-
 					results = bubbleSort(data, query.order, query.orderBy);
 					break;
 			}
@@ -244,9 +222,19 @@ export default function ProductTable2() {
 		return getPaging(results, query);
 	};
 
-	// const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+	const getTypo = (text: string, highlight?: boolean, defaultText?: string | number) => {
+		return highlight ? (
+			<Typography
+				dangerouslySetInnerHTML={{
+					__html: text,
+				}}
+			></Typography>
+		) : (
+			defaultText
+		);
+	};
+
 	useEffect(() => {
-		console.log(query);
 		const pagingFiltered = getPagingWithQuery(data, query);
 		setPagingItem(pagingFiltered);
 	}, [query]);
@@ -256,7 +244,7 @@ export default function ProductTable2() {
 			<Box>
 				<EnhancedTableToolbar
 					onChangeText={(e) =>
-						setQuery({ ...query, searchText: e.target.value as string })
+						setQuery({ ...query, page: 0, searchText: e.target.value as string })
 					}
 					onChangeField={(value) => {
 						setQuery({ ...query, searchField: value as keyof Product });
@@ -298,10 +286,13 @@ export default function ProductTable2() {
 										key={item.name}
 									>
 										<TableCell>
-											#{" "}
-											{getHightLightText(
-												item.productCode,
-												query.searchText || ""
+											{getTypo(
+												getHightLightText(
+													item.productCode,
+													query.searchText || ""
+												),
+												query.searchField === "productCode",
+												item.productCode
 											)}
 										</TableCell>
 										<TableCell
@@ -310,11 +301,27 @@ export default function ProductTable2() {
 											scope="row"
 											// padding="none"
 										>
-											{getHightLightText(item.name, query.searchText || "")}
+											{getTypo(
+												getHightLightText(
+													item.name,
+													query.searchText || ""
+												),
+												query.searchField === "name",
+												item.name
+											)}
 										</TableCell>
-										<TableCell>{item.brand}</TableCell>
+										<TableCell>
+											{getTypo(
+												getHightLightText(
+													item.brand,
+													query.searchText || ""
+												),
+												query.searchField === "brand",
+												item.brand
+											)}
+										</TableCell>
 										<TableCell align="right">
-											{convertMonney(item.price)}
+											{convertMoney(item.price)}
 										</TableCell>
 										<TableCell align="right">{item.quantity}</TableCell>
 										<TableCell align="right">
@@ -328,15 +335,9 @@ export default function ProductTable2() {
 												<HighlightOff color="error" />
 											</IconButton>
 										</TableCell>
-										{/* <TableCell align="right">{row.createdAt}</TableCell> */}
 									</TableRow>
 								);
 							})}
-							{/* {emptyRows > 0 && (
-								<TableRow style={{ height: 53 * emptyRows }}>
-									<TableCell colSpan={6} />
-								</TableRow>
-							)} */}
 						</TableBody>
 					</Table>
 				</TableContainer>
@@ -354,37 +355,12 @@ export default function ProductTable2() {
 				open={confirmPopUp}
 				onClose={() => setConfirmPopUp(false)}
 				onConfirm={() => {
-					detele(selectedItem);
+					deleteProduct(selectedItem);
 					const pagingFiltered = getPagingWithQuery(data, query);
 					setPagingItem(pagingFiltered);
 					setConfirmPopUp(false);
-					console.log(data);
 				}}
 			></ConfirmPopUp>
 		</div>
 	);
 }
-
-const convertMonney = (price: number): string => {
-	const stringPrice = new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-	}).format(price);
-	return stringPrice;
-};
-
-const getHightLightText = (value: string | number, searchText: string): React.ReactNode => {
-	if (searchText) {
-		const regEx = new RegExp(searchText, "i");
-		const newValue = value
-			.toString()
-			.replace(regEx, '<span style="background-color:yellow;">$&</span>');
-		return (
-			<Typography
-				display="inline"
-				dangerouslySetInnerHTML={{ __html: newValue }}
-			></Typography>
-		);
-	}
-	return value;
-};

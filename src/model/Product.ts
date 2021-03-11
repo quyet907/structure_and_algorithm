@@ -122,7 +122,7 @@ export let data: Product[] = [
 	return newProduct;
 });
 
-export const detele = (productId: string) => {
+export const deleteProduct = (productId: string) => {
 	let newData = [];
 	for (let index = 0; index < data.length; index++) {
 		if (data[index]["productCode"] !== productId) newData.push(data[index]);

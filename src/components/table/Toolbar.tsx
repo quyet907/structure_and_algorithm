@@ -18,7 +18,7 @@ import {
 import { Delete, FilterListRounded, Search } from "@material-ui/icons";
 import clsx from "clsx";
 import React, { useEffect, useState } from "react";
-import { SearchingAlgorithm, SortingAlgorithm } from "../ProductTable2";
+import { SearchingAlgorithm, SortingAlgorithm } from "../../model/Query";
 
 const useToolbarStyles = makeStyles((theme: Theme) =>
 	createStyles({
